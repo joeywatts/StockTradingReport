@@ -1,38 +1,170 @@
 
 \section{Design}
 
+In this section, we discuss the planned design of our system. We start by outlining a very high-level architecture of interconnected components that make up our system in the \textit{System Architecture} subsection. Next, we discuss the external tools that will be used to facilitate the development and execution of each component in the \textit{Technology Used} section. In the \textit{Schema/Data Structures} section, the details on how each component represents information is clarified. Finally, in the \textit{Data Flow} section, we elaborate on the specifics of how the separate components communicate with each other.
+
+\subsection{System Architecture}
+
+The architecture of this project is separated into three interconnected components. One component retrieves and stores information on stock prices from various sources so that it can be easily queried on-demand by other components. Another component implements the opinion aggregation model from a related work. The remaining component is responsible for testing a trading strategy and analyzing the results.
+
+\subsubsection{Pricing Data}
+
+The Pricing Data component contains utilities that can be used to query stock prices from a given data source. All stock prices from each source are preloaded into separate tables in an HBase \cite{hbase} database. For our tests, we download data from our sources on the set of stocks that we are testing on (see Table~\ref{tab:stocks}) for the entire year of 2014. Once we have downloaded the data, we can populate a table on the cluster provided to us by Virginia Tech with the price information so that it is in a standardized format. The main purpose of this component is to provide facilities for other components to access stock price information.
+
+\subsubsection{Opinion Aggregation}
+
+The Opinion Aggregation component is an implementation of the model described by Qianzhou Du, Hong Hong, G. Alan Wang, Pingyuan Wang, and Weiguo Fan in \textit{CrowdIQ: A New Opinion Aggregation Model} \cite{crowdiq}. It provides utilities that aggregate an opinion towards a stock symbol based on the microblog posts in a given time interval as well as the historical performance and consistency of each microblog author. This component is also responsible for storing and querying microblog posts from our database and provides utilities for other components to do so as well. Finally, it also provides an implementation of a sentiment analysis utility that categorizes microblog posts as ``bullish'' or ``bearish''.
+
+\subsubsection{Trading Simulation}
+
+The Trading Simulation component brings the other two components together to provide a full simulation of a trading environment. This involves implementing a virtual stock portfolio and the ability to execute transactions to buy and sell stocks. Additionally, it involves the ability to define a strategy that responds to specific events (for example, a microblog post, a stock price change, and/or market open or close events). This component provides utilities that allow you to define a strategy like an event listener which manipulates a virtual portfolio. Within this component, we will also implement the strategies that we are evaluating.
+
 \subsection{Technology Used}
 
-The virtual portfolio, pricing data, and microblogging sentiment analysis components of this project come together to create a platform for us to test and compare different trading strategies. Each of these components is written in Scala. SBT (Simple Build Tool) is used to organize the project's structure. Each component is made a separate subproject of a stub ``root'' project. SBT helps us manage any dependencies that each subproject may have, including dependencies on other subprojects. We execute our code on a Hadoop/Spark cluster that was provided by Virginia Tech. This cluster also hosts our HBase database. Spark allows us to distribute work loads across a cluster of computers to more efficiently process large datasets and expensive calculations.
+In this section, we will discuss the external tools or dependencies of each component. There are a few tools that all components depend on. The entire project will be implemented in the Scala programming language \cite{scala}. Scala was chosen because it integrates well with Apache Spark \cite{spark}, which the project also depends on. Spark allows for large-scale data processing with high performance by distributing work across a cluster of computers. We are using the Simple Build Tool (SBT) to build and execute our Scala code \cite{sbt}. SBT allows us to organize the code for each component in separate projects and introduce build dependencies easily between the projects. We use Apache HBase \cite{hbase} for our database needs, which is a distributed database that runs on Apache Hadoop \cite{hadoop}. Apache Hadoop is a framework that facilitates the development of distributed applications. The Hadoop/HBase cluster in use was provided to us by our colleagues at Virginia Tech and allows us to store a massive amount of information (since it runs on a cluster and is optimized to store big data). We are using versions 2.10.6 and 1.5.0 of Scala and Spark (respectively) so that we can match the versions available on the cluster.
 
-The virtual portfolio will maintain a stock portfolio and execute transactions. Specifically, it will store what stocks are currently owned and will facilitate the buying or selling of stocks based on their current stock price (based on the date in the simulated environment). The portfolio will operate within a simulated environment in which we can state the date, so that we can easily backtest with historical data.
+\subsubsection{Pricing Data}
 
-\begin{table}
-	\centering
-	\begin{tabular}{ | r | }
-      \hline
-      \textsc{stock\_tweets} \\ \hline
-      \textbf{post id} (row key) \\ \hline
-      base\_data:timestamp \\\hline
-      base\_data:text \\ \hline
-      base\_data:judgeid \\ \hline
-      options:sentiment \\ \hline
-      options:symbol \\ \hline
-	\end{tabular}
-	\begin{tabular}{ | r | }
-      \hline
-      \textsc{stock\_prices} \\ \hline
-      \textbf{symbol\_reverse timestamp} (row key) \\ \hline
-      price:price \\ \hline
-	\end{tabular}
-	\caption{HBase Schemas for stock\_tweets and stock\_prices tables}\label{tab:stocks}
-\end{table}
+The Pricing Data component contains code to pull stock prices from various data sources and store them in our HBase database. Apart from the Apache HBase libraries, we also depend on the Play framework's \cite{playframework} WS library, which provides a Scala API to perform web requests \cite{playws}. This component also depends on three different sources of data to retrieve stock prices. The Play WS library is used to query the Yahoo Finance and Google Finance APIs.
 
-The pricing data API will give access to stock quotes for any given date. For daily stock quotes, we are using the Yahoo Finance API to request quotes for a select set of symbols. We cache the entire set of quotes for a given time interval that we are testing in an HBase table (Table 2.2) for fast access within our cluster. The pricing data is crucial for both evaluating a judge's reliability (assessing the accuracy of their sentiment-based predictions on stock values) and executing trades in the virtual portfolio. The Yahoo Finance API gives us access to daily quotes which allow us to do swing trading, but this data is not granular enough to allow us to execute day trades. To explore day trading algorithms, we will make use of the NYSE's Trade and Quotes database that can be accessed through the Wharton Research Data Services \cite{wrds}. This data set gives intraday stock quotes with millisecond timestamps since 1993. The pricing data HBase table was defined with flexibility in mind, i.e. no assumptions about the granularity of the data were made in the table's schema so that no changes to the schema need to be made to support day trading.
+We will pull stock prices from Wharton Research Data Services (WRDS) \cite{wrds}, Yahoo Finance \cite{yahoofinance}, and Google Finance \cite{googlefinance}. Yahoo Finance has historical daily stock prices available for all but one of the stocks that we are using for testing (see Table~\ref{tab:stocks}). The one stock that we couldn't retrieve from Yahoo, \texttt{\$VRNG}, is available from Google Finance. WRDS gives us access to the New York Stock Exchange Trade and Quotes dataset which can give us highly granular (millisecond resolution) stock price data. This data is required for us to do intraday trading.
 
-With the virtual portfolio and the pricing data components together, we can define, test, and compare various trading strategies. A trading strategy will be defined with Scala code that interfaces with the virtual portfolio to execute trades (buy or sell stocks) based on pricing information and the analysis of Twitter data including both tweet sentiment and judge reliability. We can assess a strategy's performance by backtesting it with historical stock pricing and tweet data and logging its performance. Then a comparison can be made with other trading strategies.
+For Yahoo Finance and Google Finance, we have developed small utilities that request daily stock prices from the web APIs given a set of stock symbols and a date range. When the API responds with the list of prices in a JSON \cite{json} or CSV \cite{csv} file format, we parse the response, massage the data into our own data structures, and write this information to the corresponding HBase table. With WRDS, this works differently. There is no web API for us to easily query, so we must manually submit a form requesting some data, then the WRDS system will send us an email when a file containing our information is available for us to download. For this, we have written code to 
 
-The code that performs the sentiment analysis of tweets was provided to us by our clients, Saurabh and Eric. Their work on sentiment analysis was done as a term project at Virginia Tech. They have also worked with us to replicate the functions of the CrowdIQ paper to take the reliability of the tweet author into account. Much like the pricing data, our tweet dataset is stored in HBase tables (Table 2.1). We have two tables to store the information relevant to tweets, one for tweets and another for authors (judges). In the tweet table, we store the tweets contents, the judge who authored it, the stock symbols that it pertains to, the analyzed sentiment, and other pertinent information (such as the number of retweets). The judge table stores information about the judge and his/her reliability. This allows us to query HBase for tweets pertaining to certain stock (or those posted in a certain time interval) and aggregate sentiments while factoring in judge reliability.
+\subsubsection{Opinion Aggregation}
+
+The Opinion Aggregation component is responsible for performing sentiment analysis on microblog posts and aggregating these sentiments according to a complex model from a related work. This component makes use of the HBase libraries to query the microblog posts from our database. The sentiment analysis portion depends on the machine learning library provided by Spark called ``Spark.MLLib'' \cite{sparkml}. This library provides implementations of commonly used feature extraction, regression, and classification algorithms that are useful when implementing sentiment analysis. This component also depends on a source of microblog posts. Our client, Saurabh Chakravarty, has provided us with a CSV file containing about 1.5 million posts from the site StockTwits \cite{stocktwits} for the year of 2014. The HBase libraries are used to build an interface to store and retrieve these microblog posts from our database.
+
+\subsubsection{Trading Simulation}
+
+The Trading Simulation component has no external dependencies outside of those common to the entire project.
+
+\subsection{Schema/Data Structures}
+
+This section describes the data structures and schemas used to represent and organize information in this system.
+
+Understanding the database schemas requires some background information about how HBase works \cite{hbase}. As a brief overview, an HBase table stores records in the following manner. Each record is uniquely identified by its row key. Each row contains a set of columns which are identified by the column family and column qualifier. Our schemas are simple enough that it is not very important to know what distinguishes between the column family and column qualifier, but be aware that the combination of the column family and column qualifier uniquely identify a column in a row.
+
+\subsubsection{Pricing Data}
+
+The Pricing Data component defines a simple structure for a stock price within this system and a matching schema within our HBase database. Figure~\ref{stockPriceSchema} shows a visual representation of how the structure in Scala is stored in the database. Data from various sources must be processed into this structure before it can be stored in our database. We pull stock prices from three different sources which all use their own structures to represent the information. Figure~\ref{googleFinanceSchema} shows a visual representation of the structure of the data returned by the Google Finance API and how it is converted into our structure. Similarly, figure~\ref{yahooFinanceSchema} shows a visual representation of the structure of the data returned by Yahoo Finance API and how it is converted into our structure. Finally, figure~\ref{wrdsTradesSchema} shows a visual representation of the structure of the data from the NYSE's Trades database on WRDS and how this is converted into our structure.
+
+% Figure - stockPriceSchema
+\begin{figure}[h]
+  \label{stockPriceSchema}
+  \begin{center}
+    \includegraphics[width=3in]{stockPriceSchema}
+  \end{center}
+  \caption{The stock price data structure as a Scala case class (left) mapped onto its corresponding database schema (right).}
+\end{figure}
+
+% Figure - googleFinanceSchema
+\begin{figure}[h]
+  \label{googleFinanceSchema}
+  \begin{center}
+    \includegraphics[width=3in]{googleFinanceSchema}
+  \end{center}
+  \caption{The data returned from Google Finance's Web API (left) mapped onto the stock price data structure (right).}
+\end{figure}
+
+% Figure - yahooFinanceSchema
+\begin{figure}[h]
+  \label{yahooFinanceSchema}
+  \begin{center}
+    \includegraphics[width=3in]{yahooFinanceSchema}
+  \end{center}
+  \caption{The data returned from Yahoo Finance's Web API (left) mapped onto the stock price data structure (right).}
+\end{figure}
+
+% Figure - wrdsTradesSchema
+\begin{figure}[h]
+  \label{wrdsTradesSchema}
+  \begin{center}
+    \includegraphics[width=3in]{wrdsTradesSchema}
+  \end{center}
+  \caption{A data sample from the NYSE Trades dataset (left) mapped onto the stock price data structure (right).}
+\end{figure}
+
+\subsubsection{Opinion Aggregation}
+
+The Opinion Aggregation component is responsible for storing and retrieving microblog posts from our database, performing sentiment analysis on those posts, and aggregating sentiments towards a particular stock symbol. A structure is defined to represent a microblog post, and a matching schema defines how it is stored in our database. Additionally, we represent the author of a microblog post as a structure of its own, even though it only contains one field at this point. Figure~\ref{microblogPostSchema} shows both the structures and schema and how to convert between the two. Figure~\ref{stockTwitsSchema} shows the conversion between the CSV of StockTwits data from 2014 provided by our client to the microblog post structure described above.
+
+Aggregating the opinions of microblog authors requires many data structures. In order to future-proof our implementation for the support of live data, we are modeling the opinion aggregation as an online algorithm so it processes input incrementally and doesn't need to have all posts available at the start of execution. This decision influences the intermediate values used in the calculation of the aggregate sentiment and the data structures required to represent them. The aggregate sentiment of a stock requires that we know the sum of the post author's weight multiplied by the order in which each post that mentions the stock with the same sentiment was posted. Since we only need the sum of these, we don't need to store every post in the time interval with its associated order. In order to know the order in which each post referencing a particular stock symbol and with a particular sentiment was created, we can store these values in a map with keys taking the form of a tuple containing the symbol and sentiment and values being an integer. Additionally, we need to store each author's weight. This can be represented by a map of microblog authors to an object that calculates the author's weight incrementally. An author's weight is calculated by dividing their average prediction score by the standard deviation of their prediction scores. The object that calculates the author's weight must store enough data to calculate the average and standard deviation of the set of prediction scores incrementally (i.e. adding one score at a time). The score of a prediction is only available after we know if the prediction was correct or not, which happens after a confirmation time window. Therefore, we also need to queue up posts until after the confirmation window in order to update each author's weight.
+
+% Figure - microblogPostSchema (w/ Author)
+\begin{figure}[h]
+  \label{microblogPostSchema}
+  \begin{center}
+    \includegraphics[width=3in]{microblogPostSchema}
+  \end{center}
+  \caption{The \texttt{MicroblogPost} and \texttt{MicroblogAuthor} data structures (left) mapped onto the corresponding database schema (right).}
+\end{figure}
+% Figure - stockTwitsSchema
+\begin{figure}[h]
+  \label{stockTwitsSchema}
+  \begin{center}
+    \includegraphics[width=3in]{stockTwitsSchema}
+  \end{center}
+  \caption{A data sample from the StockTwits CSV dataset (left) mapped onto the \texttt{MicroblogPost} and \texttt{MicroblogAuthor} data structures (right).}
+\end{figure}
+
+\subsubsection{Trading Simulation}
+
+One of the main structures required in the Trading Simulation is the virtual portfolio. Storing a virtual portfolio involves storing the amount of each stock that is owned, as well as the amount of cash available. This structure is shown in figure~\ref{portfolioStruct}. Because we've decided to model a trading strategy as a listener to trading events, we must define what a trading event is. A trading event is any action or occurrence that is recognized by a trading strategy. The structure of a trading event will be defined to contain a time (so that all events are guaranteed to be sorted by their time of occurrence). Other than that, any implementation of a trading event may contain any arbitrary data. For example, a microblog event would be an implementation of a trading event that contains a microblog post. Trading event emitters create iterators of trading events (that are ordered by time). In order to process each event in order from all the emitters efficiently, a min priority queue that is sorted by the event time will be used to store the next event from each emitter. When an event is pulled from the priority queue, it will be processed by the strategy and then the next event from that emitter is inserted into the queue. This process repeats until there are no more events available.
+
+% Figure - portfolioStruct
+\begin{figure}[h]
+  \label{portfolioStruct}
+  \begin{center}
+    \includegraphics[width=3in]{portfolioStruct}
+  \end{center}
+  \caption{The virtual portfolio data structure.}
+\end{figure}
+
+\subsection{Data Flow}
+
+This section gives a birds-eye view of how the entire system works and dives into more detail by explaining the moving parts in each component.
+
+% Figure - graph-like diagram showing the flow of data when running a trading simulation
+
+\subsubsection{Pricing Data}
+
+Data within the pricing data component flows into our system through external sources of prices. As described in previous sections, these sources consist of the Yahoo and Google Finance APIs and the NYSE Trade and Quotes dataset from WRDS. Data from these sources is processed and stored into HBase tables. Then, the stock price information flows out of the pricing data component through an interface than pulls the data from the appropriate HBase table. Figure~\ref{pricingDataFlow} visualizes this data flow.
+
+% Figure - pricingDataFlow
+\begin{figure}[h]
+  \label{pricingDataFlow}
+  \begin{center}
+    \includegraphics[width=3in]{pricingDataFlow}
+  \end{center}
+  \caption{Data Flow within the Pricing Data Component}
+\end{figure}
+
+\subsubsection{Opinion Aggregation}
+
+External sources of microblog posts flow into the opinion aggregation component. As described in previous sections, the microblog data that we use is a set of posts from the StockTwits site in CSV format. These posts are processed and stored in an HBase table. An interface that pulls these posts from our database is provided so that other components can easily make use of this information. A utility is provided that analyzes the sentiment of a post. An additional utility calculates the aggregated sentiment towards a stock from a set of microblog posts. Both of these utilities receive microblog posts from another component (the Trading Simulation component) and return additional information (a sentiment or the current set of aggregated sentiments). Figure~\ref{opinionAggregationFlow} illustrates the flow of information within this component.
+
+% Figure - opinionAggregationFlow
+\begin{figure}[h]
+  \label{opinionAggregationFlow}
+  \begin{center}
+    \includegraphics[width=3in]{opinionAggregationFlow}
+  \end{center}
+  \caption{Data Flow within the Opinion Aggregation Component}
+\end{figure}
+
+\subsubsection{Trading Simulation}
+
+As discussed earlier, in the trading simulation component, trading events flow into a trading strategy object. In response to these events, a trading strategy will manipulate virtual portfolio objects to execute transactions. When executing transactions, the portfolio will use an interface provided by the pricing data component to get the current price of a particular stock. Additionally, trading strategies may use interfaces provided by the opinion aggregation and pricing data components as factors in their decision making.
+
+% Figure - tradingSimulationFlow
+\begin{figure}[h]
+  \label{tradingSimulationFlow}
+  \begin{center}
+    \includegraphics[width=3in]{tradingSimulationFlow}
+  \end{center}
+  \caption{Data Flow within the Trading Simulation Component}
+\end{figure}
 
 \subsection{Group Roles}
 
@@ -43,24 +175,32 @@ Apart from Saurabh and Eric, we have a four person team to which we can delegate
 A timeline of milestones that plan out the course of our project can be seen below. Our group plans to meet once a week to delegate tasks and review work and research that has been done independently.
 
 \begin{itemize}
-\item Feb 15 - Create Virtual Portfolio \& Pricing API
+\item Feb 15 - Draft Trading Simulation \& Pricing Data
   \begin{itemize}
-  \item The virtual portfolio and pricing API are necessary for every trading method that we plan to implement, since they will be used to both train and evaluate the models.
+    \item Before we can evaluate any trading strategy, we need to develop a system that simulates the trading environment (by replaying historical events and allowing a strategy to buy/sell stocks). By February 15th, we want to have an initial draft of the implementation of these pricing data and trading simulation components.
   \end{itemize}
-\item Mar 1 - Replicate Base Paper
+\item Mar 1 - Complete Trading Simulation \& Pricing Data
   \begin{itemize}
-  \item “CrowdIQ: A New Opinion Aggregation Model” details a crowd opinion aggregation model, CrowdIQ, which we intend to treat as a baseline which we can compare our new algorithms to.
+  \item By March 1st, we want to have the pricing data and trading simulation components completed, so that we can start to implement and test trading strategies on top of this framework.
   \end{itemize}
-\item Mar 15 - Determine First Trading Methods
+\item Mar 15 - Complete Opinion Aggregation \& Baseline Strategy
   \begin{itemize}
-    \item An extensive literature review is underway in order for us to determine what has been done, what has worked, and what can be improved.
+  \item By March 15th, our goal is to complete our implementation of the opinion aggregation model laid out by \textit{CrowdIQ: A New Opinion Aggregation Model} \cite{crowdiq}.
+  \item Additionally, we want to have the trading strategy described by this paper implemented by then.
   \end{itemize}
-\item Mar 22 - Implement Trading Method \#1
-\item Mar 29 - Implement Trading Method \#2
-\item Apr 5 - Implement Trading Method \#3 / Create Presentation
-\item Apr 12 - Implement Trading Method \#4
-\item Apr 19 - Implement Trading Method \#5 / Contrast Methods
-\item Apr 25 - Create Final Report
+\item Apr 1 - Research and Start Implementing Trading Strategies
+  \begin{itemize}
+  \item From March 15th to April 1st, we'd like to have completed our research on trading strategies. By this time, our goal is to have identified three trading strategies and start on their implementation.
+  \end{itemize}
+\item Apr 15 - Complete Implementation and Analysis of Trading Strategies / Assemble Presentation
+  \begin{itemize}
+  \item By April 15th, our goal is to have working implementations of the trading strategies and analyze their results for the year of 2014.
+  \item Additionally, we want to assemble the presentation that we will be giving to the rest of our capstone class on our work.
+  \end{itemize}
+\item Apr 25 - Complete Documentation of Work in Final Report
+  \begin{itemize}
+  \item By April 25th, we want to have completed our documentation for users and developers who are interested in our work.
+  \end{itemize}
 \end{itemize}
 
 
