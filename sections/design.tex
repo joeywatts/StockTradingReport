@@ -25,11 +25,9 @@ In this section, we will discuss the external tools or dependencies of each comp
 
 \subsubsection{Pricing Data}
 
-The Pricing Data component contains code to pull stock prices from various data sources and store them in our HBase database. Apart from the Apache HBase libraries, we also depend on the Play framework's \cite{playframework} WS library, which provides a Scala API to perform web requests \cite{playws}. This component also depends on three different sources of data to retrieve stock prices. The Play WS library is used to query the Yahoo Finance and Google Finance APIs.
+The Pricing Data component contains code to pull stock prices from various data sources and store them in our HBase database. Apart from the Apache HBase libraries, we also depend on the Play framework's \cite{playframework} WS library, which provides a Scala API to perform web requests \cite{playws}. This component also depends on two different sources of data to retrieve stock prices. The Play WS library is used to query the Yahoo Finance and Google Finance APIs.
 
-We will pull stock prices from Wharton Research Data Services (WRDS) \cite{wrds}, Yahoo Finance \cite{yahoofinance}, and Google Finance \cite{googlefinance}. Yahoo Finance has historical daily stock prices available for all but one of the stocks that we are using for testing (see Table~\ref{tab:stocks}). The one stock that we couldn't retrieve from Yahoo, \texttt{\$VRNG}, is available from Google Finance. WRDS gives us access to the New York Stock Exchange Trade and Quotes dataset which can give us highly granular (millisecond resolution) stock price data. This data is required for us to do intraday trading.
-
-For Yahoo Finance and Google Finance, we have developed small utilities that request daily stock prices from the web APIs given a set of stock symbols and a date range. When the API responds with the list of prices in a JSON \cite{json} or CSV \cite{csv} file format, we parse the response, massage the data into our own data structures, and write this information to the corresponding HBase table. With WRDS, this works differently. There is no web API for us to easily query, so we must manually submit a form requesting some data, then the WRDS system will send us an email when a file containing our information is available for us to download. For this, we have written code to 
+We will pull stock prices from Yahoo Finance \cite{yahoofinance} and Google Finance \cite{googlefinance}. Yahoo Finance has historical daily stock prices available for all but one of the stocks that we are using for testing (see Table~\ref{tab:stocks}). The one stock that we couldn't retrieve from Yahoo, \texttt{\$VRNG}, is available from Google Finance. We have developed small utilities that request daily stock prices from the web APIs given a set of stock symbols and a date range. When the API responds with the list of prices in a JSON \cite{json} or CSV \cite{csv} file format, we parse the response, massage the data into our own data structures, and write this information to the corresponding HBase table.
 
 \subsubsection{Opinion Aggregation}
 
@@ -47,47 +45,20 @@ Understanding the database schemas requires some background information about ho
 
 \subsubsection{Pricing Data}
 
-The Pricing Data component defines a simple structure for a stock price within this system and a matching schema within our HBase database. Figure~\ref{stockPriceSchema} shows a visual representation of how the structure in Scala is stored in the database. Data from various sources must be processed into this structure before it can be stored in our database. We pull stock prices from three different sources which all use their own structures to represent the information. Figure~\ref{googleFinanceSchema} shows a visual representation of the structure of the data returned by the Google Finance API and how it is converted into our structure. Similarly, figure~\ref{yahooFinanceSchema} shows a visual representation of the structure of the data returned by Yahoo Finance API and how it is converted into our structure. Finally, figure~\ref{wrdsTradesSchema} shows a visual representation of the structure of the data from the NYSE's Trades database on WRDS and how this is converted into our structure.
+The Pricing Data component defines a simple structure for a stock price within this system and a matching schema within our HBase database. Figure~\ref{stockPriceSchema} shows a visual representation of how the structure in Scala is stored in the database. Data from various sources must be processed into this structure before it can be stored in our database. We pull stock prices from three different sources which all use their own structures to represent the information. Google Finance's API returns information in a CSV format \cite{csv}. Every row (line) in the CSV contains columns for the date, open price, high price, low price, close price, and trading volume. The CSV will contain a line for each market day in the date range that is specified. Yahoo Finance's API returns information in a JSON format \cite{json}. The information of interest in the JSON response is an array within the nested object structure. This array is found by following these keys in the nested object structure: ``query'', ``results'', and, finally, ``quote''. This array is filled with objects containing keys for the stock symbol, date, open price, high price, low price, close price, volume, and adjusted close price. These daily price summaries don't give us granular information about the price at a particular time during the day, but by associating a predefined time with the open and close of the market, we can generate a \texttt{StockPrice} object for the open and close of each market day.
 
 % Figure - stockPriceSchema
 \begin{figure}[h]
   \label{stockPriceSchema}
   \begin{center}
-    \includegraphics[width=3in]{stockPriceSchema}
+    \includegraphics[max width=\textwidth]{stockPriceSchema}
   \end{center}
   \caption{The stock price data structure as a Scala case class (left) mapped onto its corresponding database schema (right).}
 \end{figure}
 
-% Figure - googleFinanceSchema
-\begin{figure}[h]
-  \label{googleFinanceSchema}
-  \begin{center}
-    \includegraphics[width=3in]{googleFinanceSchema}
-  \end{center}
-  \caption{The data returned from Google Finance's Web API (left) mapped onto the stock price data structure (right).}
-\end{figure}
-
-% Figure - yahooFinanceSchema
-\begin{figure}[h]
-  \label{yahooFinanceSchema}
-  \begin{center}
-    \includegraphics[width=3in]{yahooFinanceSchema}
-  \end{center}
-  \caption{The data returned from Yahoo Finance's Web API (left) mapped onto the stock price data structure (right).}
-\end{figure}
-
-% Figure - wrdsTradesSchema
-\begin{figure}[h]
-  \label{wrdsTradesSchema}
-  \begin{center}
-    \includegraphics[width=3in]{wrdsTradesSchema}
-  \end{center}
-  \caption{A data sample from the NYSE Trades dataset (left) mapped onto the stock price data structure (right).}
-\end{figure}
-
 \subsubsection{Opinion Aggregation}
 
-The Opinion Aggregation component is responsible for storing and retrieving microblog posts from our database, performing sentiment analysis on those posts, and aggregating sentiments towards a particular stock symbol. A structure is defined to represent a microblog post, and a matching schema defines how it is stored in our database. Additionally, we represent the author of a microblog post as a structure of its own, even though it only contains one field at this point. Figure~\ref{microblogPostSchema} shows both the structures and schema and how to convert between the two. Figure~\ref{stockTwitsSchema} shows the conversion between the CSV of StockTwits data from 2014 provided by our client to the microblog post structure described above.
+The Opinion Aggregation component is responsible for storing and retrieving microblog posts from our database, performing sentiment analysis on those posts, and aggregating sentiments towards a particular stock symbol. A structure is defined to represent a microblog post, and a matching schema defines how it is stored in our database. Additionally, we represent the author of a microblog post as a structure of its own, even though it only contains one field at this point. Figure~\ref{microblogPostSchema} shows both the structures and schema and how to convert between the two. The conversion between the CSV of StockTwits data from 2014 provided by our client to the microblog post structure described above is done by parsing each row of the CSV and extracting the columns that correspond to the post id, text content, symbols mentioned, tagged sentiment, time, and author id. These columns translate directly into values stored in the \texttt{MicroblogPost} data structure.
 
 Aggregating the opinions of microblog authors requires many data structures. In order to future-proof our implementation for the support of live data, we are modeling the opinion aggregation as an online algorithm so it processes input incrementally and doesn't need to have all posts available at the start of execution. This decision influences the intermediate values used in the calculation of the aggregate sentiment and the data structures required to represent them. The aggregate sentiment of a stock requires that we know the sum of the post author's weight multiplied by the order in which each post that mentions the stock with the same sentiment was posted. Since we only need the sum of these, we don't need to store every post in the time interval with its associated order. In order to know the order in which each post referencing a particular stock symbol and with a particular sentiment was created, we can store these values in a map with keys taking the form of a tuple containing the symbol and sentiment and values being an integer. Additionally, we need to store each author's weight. This can be represented by a map of microblog authors to an object that calculates the author's weight incrementally. An author's weight is calculated by dividing their average prediction score by the standard deviation of their prediction scores. The object that calculates the author's weight must store enough data to calculate the average and standard deviation of the set of prediction scores incrementally (i.e. adding one score at a time). The score of a prediction is only available after we know if the prediction was correct or not, which happens after a confirmation time window. Therefore, we also need to queue up posts until after the confirmation window in order to update each author's weight.
 
@@ -95,17 +66,9 @@ Aggregating the opinions of microblog authors requires many data structures. In 
 \begin{figure}[h]
   \label{microblogPostSchema}
   \begin{center}
-    \includegraphics[width=3in]{microblogPostSchema}
+    \includegraphics[max width=\textwidth]{microblogPostSchema}
   \end{center}
   \caption{The \texttt{MicroblogPost} and \texttt{MicroblogAuthor} data structures (left) mapped onto the corresponding database schema (right).}
-\end{figure}
-% Figure - stockTwitsSchema
-\begin{figure}[h]
-  \label{stockTwitsSchema}
-  \begin{center}
-    \includegraphics[width=3in]{stockTwitsSchema}
-  \end{center}
-  \caption{A data sample from the StockTwits CSV dataset (left) mapped onto the \texttt{MicroblogPost} and \texttt{MicroblogAuthor} data structures (right).}
 \end{figure}
 
 \subsubsection{Trading Simulation}
@@ -116,55 +79,26 @@ One of the main structures required in the Trading Simulation is the virtual por
 \begin{figure}[h]
   \label{portfolioStruct}
   \begin{center}
-    \includegraphics[width=3in]{portfolioStruct}
+    \includegraphics[max width=\textwidth]{portfolioStruct}
   \end{center}
   \caption{The virtual portfolio data structure.}
 \end{figure}
 
 \subsection{Data Flow}
 
-This section gives a birds-eye view of how the entire system works and dives into more detail by explaining the moving parts in each component.
-
-% Figure - graph-like diagram showing the flow of data when running a trading simulation
+This section gives a detailed view of how data flows between each component of the system.
 
 \subsubsection{Pricing Data}
 
-Data within the pricing data component flows into our system through external sources of prices. As described in previous sections, these sources consist of the Yahoo and Google Finance APIs and the NYSE Trade and Quotes dataset from WRDS. Data from these sources is processed and stored into HBase tables. Then, the stock price information flows out of the pricing data component through an interface than pulls the data from the appropriate HBase table. Figure~\ref{pricingDataFlow} visualizes this data flow.
-
-% Figure - pricingDataFlow
-\begin{figure}[h]
-  \label{pricingDataFlow}
-  \begin{center}
-    \includegraphics[width=3in]{pricingDataFlow}
-  \end{center}
-  \caption{Data Flow within the Pricing Data Component}
-\end{figure}
+Data within the pricing data component flows into our system through external sources of prices. As described in previous sections, these sources consist of the Yahoo and Google Finance APIs. Data from these sources is processed and stored into HBase tables. Then, the stock price information flows out of the pricing data component through an interface than pulls the data from the appropriate HBase table.
 
 \subsubsection{Opinion Aggregation}
 
-External sources of microblog posts flow into the opinion aggregation component. As described in previous sections, the microblog data that we use is a set of posts from the StockTwits site in CSV format. These posts are processed and stored in an HBase table. An interface that pulls these posts from our database is provided so that other components can easily make use of this information. A utility is provided that analyzes the sentiment of a post. An additional utility calculates the aggregated sentiment towards a stock from a set of microblog posts. Both of these utilities receive microblog posts from another component (the Trading Simulation component) and return additional information (a sentiment or the current set of aggregated sentiments). Figure~\ref{opinionAggregationFlow} illustrates the flow of information within this component.
-
-% Figure - opinionAggregationFlow
-\begin{figure}[h]
-  \label{opinionAggregationFlow}
-  \begin{center}
-    \includegraphics[width=3in]{opinionAggregationFlow}
-  \end{center}
-  \caption{Data Flow within the Opinion Aggregation Component}
-\end{figure}
+External sources of microblog posts flow into the opinion aggregation component. As described in previous sections, the microblog data that we use is a set of posts from the StockTwits site in CSV format. These posts are processed and stored in an HBase table. An interface that pulls these posts from our database is provided so that other components can easily make use of this information. A utility is provided that analyzes the sentiment of a post. An additional utility calculates the aggregated sentiment towards a stock from a set of microblog posts. Both of these utilities receive microblog posts from another component (the Trading Simulation component) and return additional information (a sentiment or the current set of aggregated sentiments).
 
 \subsubsection{Trading Simulation}
 
 As discussed earlier, in the trading simulation component, trading events flow into a trading strategy object. In response to these events, a trading strategy will manipulate virtual portfolio objects to execute transactions. When executing transactions, the portfolio will use an interface provided by the pricing data component to get the current price of a particular stock. Additionally, trading strategies may use interfaces provided by the opinion aggregation and pricing data components as factors in their decision making.
-
-% Figure - tradingSimulationFlow
-\begin{figure}[h]
-  \label{tradingSimulationFlow}
-  \begin{center}
-    \includegraphics[width=3in]{tradingSimulationFlow}
-  \end{center}
-  \caption{Data Flow within the Trading Simulation Component}
-\end{figure}
 
 \subsection{Group Roles}
 

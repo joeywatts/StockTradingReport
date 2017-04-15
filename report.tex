@@ -17,9 +17,15 @@
 \usepackage{biblatex}
 \addbibresource{references.bib}
 
+% URLs
+\usepackage{hyperref}
+
 % Include images as figures
 \usepackage{graphicx}
 \graphicspath{{images/}{../images/}}
+
+% max width key for includegraphics
+\usepackage[export]{adjustbox}
 
 \newcommand{\sectionbreak}{\clearpage}
 
@@ -38,6 +44,12 @@
 \subfile{sections/design}
 
 \subfile{sections/implementation}
+
+\subfile{sections/prototyping}
+
+\subfile{sections/refinement}
+
+\subfile{sections/testing}
 
 \newpage
 \addcontentsline{toc}{section}{List of Figures}
