@@ -1,29 +1,58 @@
 
 \section{Refinement}
 
-After implementing the prototype, which consists of the trading simulation software, the baseline strategy, and a simple buy-and-hold strategy, we reviewed our progress with our client, Saurabh. Together, we determined that our simulation is as designed and the baseline implementation is working as anticipated. In this section, we discuss the refinements that we make on our prototype and three trading strategies that we will implement, test, and compare against the baseline.
+After implementing the prototype, which consists of the trading simulation software, the baseline strategy, and a simple buy-and-hold strategy, we reviewed our progress with our client, Saurabh.
+Together, we determined that our simulation is as designed and the baseline implementation is working as anticipated.
+In this section, we discuss the refinements that we make on our prototype and three trading strategies that we will implement, test, and compare against the baseline.
 
 \subsection{Stock Split Consideration}
 
-We discovered that we neglected to consider stock-splits in the design of our trading simulation software. A stock split is when a security's shares split so that the number of shares is adjusted (and as a consequence, the value of each share changes) \cite{stocksplit}. For example, in a 1-for-3 stock split, one share splits into three shares with values that sum to the same value of the existing share. There are also reverse stock splits (or ``stock merges''). In our research, we discovered that the only stock split for the year of 2014 for our selection of 11 stocks was \texttt{\$AAPL}'s 1-for-7 split on June 9th, 2014 \cite{appleSplit}. We were able to implement the adjustment for stock splits in our virtual portfolio by hardcoding the split ratio and adding a function \texttt{withSplitAdjustments} that will adjust the number of \texttt{\$AAPL} stocks that are owned once June 9th, 2014 is passed in the simulation. This served us as a short term solution and allows us to prioritize our work on implementing additional trading strategies.
+We discovered that we neglected to consider stock-splits in the design of our trading simulation software.
+A stock split is when a security's shares split so that the number of shares is adjusted (and as a consequence, the value of each share changes) \cite{stocksplit}.
+For example, in a 1-for-3 stock split, one share splits into three shares with values that sum to the same value of the existing share.
+There are also reverse stock splits (or ``stock merges'').
+In our research, we discovered that the only stock split for the year of 2014 for our selection of 11 stocks was \texttt{\$AAPL}'s 1-for-7 split on June 9th, 2014 \cite{appleSplit}.
+We were able to implement the adjustment for stock splits in our virtual portfolio by hardcoding the split ratio and adding a function \texttt{withSplitAdjustments} that will adjust the number of \texttt{\$AAPL} stocks that are owned once June 9th, 2014 is passed in the simulation.
+This served us as a short term solution and allows us to prioritize our work on implementing additional trading strategies.
 
 \subsection{Moving Average Strategy}
 
-Using moving averages of stock prices is a very common indicator used to make trading decisions. A moving average is calculated by averaging the stock price for the last $n$ days. We devised a ``Moving Average'' trading strategy that takes a long moving average and a short moving average of a stock's price and compares them against the closing price of the day. If the closing price is greater than both the short and the long moving averages, then we buy the stock. If the closing price is less than both the short and the long moving averages, then we sell the stock. Otherwise, we hold. This strategy is based on the idea that a stock's price will continue on its current trend.
+Using moving averages of stock prices is a very common indicator used to make trading decisions.
+A moving average is calculated by averaging the stock price for the last $n$ days.
+We devised a ``Moving Average'' trading strategy that takes a long moving average and a short moving average of a stock's price and compares them against the closing price of the day.
+If the closing price is greater than both the short and the long moving averages, then we buy the stock.
+If the closing price is less than both the short and the long moving averages, then we sell the stock.
+Otherwise, we hold.
+This strategy is based on the idea that a stock's price will continue on its current trend.
 
-To implement this strategy, we used a queue of \texttt{StockPrice} objects to store the open price of the last $m$ days where $m$ is the number of stocks to consider in the long moving average. On every market open, we query for the current stock price and add it to the queue, dropping the front of the queue while the length is greater than $m$. With this queue, it is simple to compute a moving average.
+To implement this strategy, we used a queue of \texttt{StockPrice} objects to store the open price of the last $m$ days where $m$ is the number of stocks to consider in the long moving average.
+On every market open, we query for the current stock price and add it to the queue, dropping the front of the queue while the length is greater than $m$.
+With this queue, it is simple to compute a moving average.
 
 Since we are doing relatively short-term trading, we decided on using 5 days for the short moving average and 10 days for the long moving average.
 
 \subsection{Moving Average with Sentiment Strategy}
 
-The baseline strategy does not consider the trend in stock price in the decision-making process. With the ``Moving Average with Sentiment'' strategy, we attempt to consider the price trend in addition to the aggregated market sentiment. The strategy works by only trading when the baseline strategy and the ``Moving Average'' strategy would both make the same decision. That is, if the ``Moving Average'' strategy would expect the stock price to continue rising (if it would buy), but the baseline strategy thinks that the market is bearish, it will not make a trade. Similarly, if the baseline detects a bullish market, but the ``Moving Average'' strategy is expecting the price to drop, then it will not make a trade. It only trades when the expectations of both strategies are the same. The hypothesis with this strategy is that baseline can lose a significant amount of money by not considering the current price trend and only going off of others opinions, and by augmenting this strategy with the information about the price trend, the decision-making considers more factors. 
+The baseline strategy does not consider the trend in stock price in the decision-making process.
+With the ``Moving Average with Sentiment'' strategy, we attempt to consider the price trend in addition to the aggregated market sentiment.
+The strategy works by only trading when the baseline strategy and the ``Moving Average'' strategy would both make the same decision.
+That is, if the ``Moving Average'' strategy would expect the stock price to continue rising (if it would buy), but the baseline strategy thinks that the market is bearish, it will not make a trade.
+Similarly, if the baseline detects a bullish market, but the ``Moving Average'' strategy is expecting the price to drop, then it will not make a trade.
+It only trades when the expectations of both strategies are the same.
+The hypothesis with this strategy is that baseline can lose a significant amount of money by not considering the current price trend and only going off of others opinions, and by augmenting this strategy with the information about the price trend, the decision-making considers more factors. 
 
 \subsection{Selection by Sentiment Strategy}
 
-The ``Selection by Sentiment'' strategy differs from the baseline in the way that it allocates funds to bullish stocks. The baseline strategy allocates funds for each stock in a separate portfolio. This is inefficient when a stock is bearish because the funds are sitting in cash as opposed to being invested in a different stock that is bullish. This strategy is a more efficient allocation of funds because it keeps all the cash in the same portfolio. On each market open event, it evenly distributes the value of the portfolio among a maximum of $n$ stocks that it detects as bullish. By more efficiently allocating funds, we can significantly increase profit. This is because profits will compound across all stocks since they are all in the same portfolio and more money will typically be invested in each bullish stock since it rarely happens that all stocks are bullish.
+The ``Selection by Sentiment'' strategy differs from the baseline in the way that it allocates funds to bullish stocks.
+The baseline strategy allocates funds for each stock in a separate portfolio.
+This is inefficient when a stock is bearish because the funds are sitting in cash as opposed to being invested in a different stock that is bullish.
+This strategy is a more efficient allocation of funds because it keeps all the cash in the same portfolio.
+On each market open event, it evenly distributes the value of the portfolio among a maximum of $n$ stocks that it detects as bullish.
+By more efficiently allocating funds, we can significantly increase profit.
+This is because profits will compound across all stocks since they are all in the same portfolio and more money will typically be invested in each bullish stock since it rarely happens that all stocks are bullish.
 
-We will experically test several values for $n$, the maximum number of stocks that you can be invested in, to determine which performs the best. Interestingly, a related work on sentiment-based stock trading strategies claimed that diversification (investing in more stocks) leads to diminished returns \cite{tradingSentimentPaper}.
+We will experically test several values for $n$, the maximum number of stocks that you can be invested in, to determine which performs the best.
+Interestingly, a related work on sentiment-based stock trading strategies claimed that diversification (investing in more stocks) leads to diminished returns \cite{tradingSentimentPaper}.
 
 %%% Local Variables:
 %%% mode: latex
