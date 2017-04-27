@@ -18,7 +18,7 @@ The remaining component is responsible for testing a trading strategy and analyz
 
 The Pricing Data component contains utilities that can be used to query stock prices from a given data source.
 All stock prices from each source are preloaded into separate tables in an HBase \cite{hbase} database.
-For our tests, we download data from our sources on the set of stocks that we are testing on (see Table~\ref{tab:stocks}) for the entire year of 2014.
+For our tests, we download data from our sources on the set of stocks that we are considering (see Table~\ref{tab:stocks}) for the entire year of 2014.
 Once we have downloaded the data, we can populate a table on the cluster provided to us by Virginia Tech with the price information so that it is in a standardized format.
 The main purpose of this component is to provide facilities for other components to access stock price information.
 
@@ -39,10 +39,10 @@ Within this component, we will also implement the strategies that we are evaluat
 
 \subsection{Technology Used}
 
-In this section, we will discuss the external tools or dependencies of each component.
-There are a few tools that all components depend on.
+In this section, we discuss the external tools or dependencies of each component.
+There are a few tools that all components depend upon.
 The entire project will be implemented in the Scala programming language \cite{scala}.
-Scala was chosen because it integrates well with Apache Spark \cite{spark}, which the project also depends on.
+Scala was chosen because it integrates well with Apache Spark \cite{spark}, which the project also depends upon.
 Spark allows for large-scale data processing with high performance by distributing work across a cluster of computers.
 We are using the Simple Build Tool (SBT) to build and execute our Scala code \cite{sbt}.
 SBT allows us to organize the code for each component in separate projects and introduce build dependencies easily between the projects.
@@ -53,9 +53,9 @@ We are using versions 2.10.6 and 1.5.0 of Scala and Spark (respectively) so that
 
 \subsubsection{Pricing Data}
 
-The Pricing Data component contains code to pull stock prices from various data sources and store them in our HBase database.
+The Pricing Data component contains code to pull stock prices from various data sources and store them in HBase.
 Apart from the Apache HBase libraries, we also depend on the Play framework's \cite{playframework} WS library, which provides a Scala API to perform web requests \cite{playws}.
-This component also depends on two different sources of data to retrieve stock prices.
+This component depends upon two different sources of data to retrieve stock prices.
 The Play WS library is used to query the Yahoo Finance and Google Finance APIs.
 
 We will pull stock prices from Yahoo Finance \cite{yahoofinance} and Google Finance \cite{googlefinance}.
@@ -68,7 +68,7 @@ When the API responds with the list of prices in a JSON \cite{json} or CSV \cite
 
 The Opinion Aggregation component is responsible for performing sentiment analysis on microblog posts and aggregating these sentiments according to a complex model from a related work.
 This component makes use of the HBase libraries to query the microblog posts from our database.
-The sentiment analysis portion depends on the machine learning library provided by Spark called ``Spark.MLLib'' \cite{sparkml}.
+The sentiment analysis portion depends upon the machine learning library provided by Spark called ``Spark.MLLib'' \cite{sparkml}.
 This library provides implementations of commonly used feature extraction, regression, and classification algorithms that are useful when implementing sentiment analysis.
 This component also depends on a source of microblog posts.
 Our client, Saurabh Chakravarty, has provided us with a CSV file containing about 1.5 million posts from the site StockTwits \cite{stocktwits} for the year of 2014.
@@ -83,15 +83,15 @@ The Trading Simulation component has no external dependencies outside of those c
 This section describes the data structures and schemas used to represent and organize information in this system.
 
 Understanding the database schemas requires some background information about how HBase works \cite{hbase}.
-As a brief overview, an HBase table stores records in the following manner.
+An HBase table stores records in the following manner.
 Each record is uniquely identified by its row key.
 Each row contains a set of columns which are identified by the column family and column qualifier.
-Our schemas are simple enough that it is not very important to know what distinguishes between the column family and column qualifier, but be aware that the combination of the column family and column qualifier uniquely identify a column in a row.
+Our schemas are simple enough that it is not very important to know what distinguishes between the column family and column qualifier, but be aware that the combination of the column family and column qualifier uniquely identifies a column in a row.
 
 \subsubsection{Pricing Data}
 
 The Pricing Data component defines a simple structure for a stock price within this system and a matching schema within our HBase database.
-Figure~\ref{stockPriceSchema} shows a visual representation of how the structure in Scala is stored in the database.
+Figure~\ref{stockPriceSchema} shows how the structure in Scala is stored in the database.
 Data from various sources must be processed into this structure before it can be stored in our database.
 We pull stock prices from three different sources which all use their own structures to represent the information.
 Google Finance's API returns information in a CSV format \cite{csv}.
@@ -118,7 +118,7 @@ The Opinion Aggregation component is responsible for storing and retrieving micr
 A structure is defined to represent a microblog post, and a matching schema defines how it is stored in our database.
 Additionally, we represent the author of a microblog post as a structure of its own, even though it only contains one field at this point.
 Figure~\ref{microblogPostSchema} shows both the structures and schema and how to convert between the two.
-The conversion between the CSV of StockTwits data from 2014 provided by our client to the microblog post structure described above is done by parsing each row of the CSV and extracting the columns that correspond to the post id, text content, symbols mentioned, tagged sentiment, time, and author id.
+The conversion between the CSV of StockTwits data from 2014 provided by our client to the microblog post structure described above is done by parsing each row of the CSV and extracting the columns that correspond to the post ID, text content, symbols mentioned, tagged sentiment, time, and author ID.
 These columns translate directly into values stored in the \texttt{MicroblogPost} data structure.
 
 Aggregating the opinions of microblog authors requires many data structures.
@@ -130,7 +130,7 @@ In order to know the order in which each post referencing a particular stock sym
 Additionally, we need to store each author's weight.
 This can be represented by a map of microblog authors to an object that calculates the author's weight incrementally.
 An author's weight is calculated by dividing their average prediction score by the standard deviation of their prediction scores.
-The object that calculates the author's weight must store enough data to calculate the average and standard deviation of the set of prediction scores incrementally (i.e. adding one score at a time).
+The object that calculates the author's weight must store enough data to calculate the average and standard deviation of the set of prediction scores incrementally (i.e., adding one score at a time).
 The score of a prediction is only available after we know if the prediction was correct or not, which happens after a confirmation time window.
 Therefore, we also need to queue up posts until after the confirmation window in order to update each author's weight.
 
@@ -147,7 +147,7 @@ Therefore, we also need to queue up posts until after the confirmation window in
 
 One of the main structures required in the Trading Simulation is the virtual portfolio.
 Storing a virtual portfolio involves storing the amount of each stock that is owned, as well as the amount of cash available.
-This structure is shown in figure~\ref{portfolioStruct}.
+This structure is shown in Figure~\ref{portfolioStruct}.
 Because we've decided to model a trading strategy as a listener to trading events, we must define what a trading event is.
 A trading event is any action or occurrence that is recognized by a trading strategy.
 The structure of a trading event will be defined to contain a time (so that all events are guaranteed to be sorted by their time of occurrence).
@@ -209,37 +209,37 @@ On top of all of our roles, each of us is responsible for participating in the l
 
 \subsection{Timeline}
 
-A timeline of milestones that plan out the course of our project can be seen below.
-Our group plans to meet once a week to delegate tasks and review work and research that has been done independently.
+A timeline of milestones over the course of our project can be seen below.
+Our group plans to meet once a week to delegate tasks and review work that has been done independently.
 
 \begin{itemize}
-\item Feb 15 - Draft Trading Simulation \& Pricing Data
+\item Feb. 15 - Draft Trading Simulation \& Pricing Data
   \begin{itemize}
   \item Before we can evaluate any trading strategy, we need to develop a system that simulates the trading environment (by replaying historical events and allowing a strategy to buy/sell stocks).
-    By February 15th, we want to have an initial draft of the implementation of these pricing data and trading simulation components.
+    By February 15, we want to have an initial draft of the implementation of these pricing data and trading simulation components.
   \end{itemize}
-\item Mar 1 - Complete Trading Simulation \& Pricing Data
+\item Mar. 1 - Complete Trading Simulation \& Pricing Data
   \begin{itemize}
-  \item By March 1st, we want to have the pricing data and trading simulation components completed, so that we can start to implement and test trading strategies on top of this framework.
+  \item By March 1, we want to have the pricing data and trading simulation components completed, so that we can start to implement and test trading strategies on top of this framework.
   \end{itemize}
-\item Mar 15 - Complete Opinion Aggregation \& Baseline Strategy
+\item Mar. 15 - Complete Opinion Aggregation \& Baseline Strategy
   \begin{itemize}
-  \item By March 15th, our goal is to complete our implementation of the opinion aggregation model laid out by \textit{CrowdIQ: A New Opinion Aggregation Model} \cite{crowdiq}.
+  \item By March 15, we aim to complete our implementation of the opinion aggregation model laid out by \textit{CrowdIQ: A New Opinion Aggregation Model} \cite{crowdiq}.
   \item Additionally, we want to have the trading strategy described by this paper implemented by then.
   \end{itemize}
-\item Apr 1 - Research and Start Implementing Trading Strategies
+\item Apr. 1 - Research and Start Implementing Trading Strategies
   \begin{itemize}
-  \item From March 15th to April 1st, we'd like to have completed our research on trading strategies.
-    By this time, our goal is to have identified three trading strategies and start on their implementation.
+  \item From March 15 to April 1, we'd like to have completed our research on trading strategies.
+    By this time, our goal is to have identified three trading strategies and to start on their implementation.
   \end{itemize}
-\item Apr 15 - Complete Implementation and Analysis of Trading Strategies / Assemble Presentation
+\item Apr. 15 - Complete Implementation and Analysis of Trading Strategies / Assemble Presentation
   \begin{itemize}
-  \item By April 15th, our goal is to have working implementations of the trading strategies and analyze their results for the year of 2014.
+  \item By April 15, our goal is to have working implementations of the trading strategies and analyze their results for the year of 2014.
   \item Additionally, we want to assemble the presentation that we will be giving to the rest of our capstone class on our work.
   \end{itemize}
-\item Apr 25 - Complete Documentation of Work in Final Report
+\item Apr. 25 - Complete Documentation of Work in Final Report
   \begin{itemize}
-  \item By April 25th, we want to have completed our documentation for users and developers who are interested in our work.
+  \item By April 25, we want to have completed our documentation for users and developers who are interested in our work.
   \end{itemize}
 \end{itemize}
 

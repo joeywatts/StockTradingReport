@@ -11,15 +11,15 @@ We discovered that we neglected to consider stock-splits in the design of our tr
 A stock split is when a security's shares split so that the number of shares is adjusted (and as a consequence, the value of each share changes) \cite{stocksplit}.
 For example, in a 1-for-3 stock split, one share splits into three shares with values that sum to the same value of the existing share.
 There are also reverse stock splits (or ``stock merges'').
-In our research, we discovered that the only stock split for the year of 2014 for our selection of 11 stocks was \texttt{\$AAPL}'s 1-for-7 split on June 9th, 2014 \cite{appleSplit}.
-We were able to implement the adjustment for stock splits in our virtual portfolio by hardcoding the split ratio and adding a function \texttt{withSplitAdjustments} that will adjust the number of \texttt{\$AAPL} stocks that are owned once June 9th, 2014 is passed in the simulation.
-This served us as a short term solution and allows us to prioritize our work on implementing additional trading strategies.
+In our research, we discovered that the only stock split for the year of 2014 for our selection of 11 stocks was \texttt{\$AAPL}'s 1-for-7 split on June 9, 2014 \cite{appleSplit}.
+We were able to implement the adjustment for stock splits in our virtual portfolio by hardcoding the split ratio and adding a function \texttt{withSplitAdjustments} that will adjust the number of \texttt{\$AAPL} stocks that are owned once June 9, 2014 is passed in the simulation.
+This served as a short term solution and allows us to prioritize our work on implementing additional trading strategies.
 
 \subsection{Moving Average Strategy}
 
 Using moving averages of stock prices is a very common indicator used to make trading decisions.
 A moving average is calculated by averaging the stock price for the last $n$ days.
-We devised a ``Moving Average'' trading strategy that takes a long moving average and a short moving average of a stock's price and compares them against the closing price of the day.
+We devised a ``Moving Average'' trading strategy that takes a long moving average and a short moving average of a stock's price, and compares them against the closing price of the day.
 If the closing price is greater than both the short and the long moving averages, then we buy the stock.
 If the closing price is less than both the short and the long moving averages, then we sell the stock.
 Otherwise, we hold.
@@ -51,7 +51,7 @@ On each market open event, it evenly distributes the value of the portfolio amon
 By more efficiently allocating funds, we can significantly increase profit.
 This is because profits will compound across all stocks since they are all in the same portfolio and more money will typically be invested in each bullish stock since it rarely happens that all stocks are bullish.
 
-We will experically test several values for $n$, the maximum number of stocks that you can be invested in, to determine which performs the best.
+We will experimentally test several values for $n$, the maximum number of stocks that you can be invested in, to determine which performs the best.
 Interestingly, a related work on sentiment-based stock trading strategies claimed that diversification (investing in more stocks) leads to diminished returns \cite{tradingSentimentPaper}.
 
 %%% Local Variables:

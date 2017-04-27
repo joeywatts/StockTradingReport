@@ -1,7 +1,7 @@
 
 \section{Implementation}
 
-In this section, we will outline the plan to implement each component of our system as it was designed in the previous section.
+In this section, we outline the plan to implement each component of our system as it was designed in the previous section.
 Specifically, we are outlining the implementation plan for the trading simulation software required to test the strategies that are being researched and will be implemented in a later stage of this project.
 Additionally, the responsibilities for each member of our team will be made clear.
 
@@ -11,7 +11,7 @@ This repository is available at \url{github.com/saurabh/cs4624}.
 
 \subsection{Pricing Data}
 
-To recap the design section, the implementation of the pricing data component involves setting up the database schema, implementing an interface that stores and retrieves stock prices (in the data structure described in our design plan) from our database, and, finally, implementing utilities that request and parse the stock price information from external sources.
+To recap the design section, the implementation of the pricing data component involves setting up the database schema, implementing an interface that stores and retrieves stock prices (in the data structure described) from our database, and, finally, implementing utilities that request and parse the stock price information from external sources.
 The effort behind the implementation of this component is led by Joseph Watts.
 
 \subsubsection{Setting Up Database Schema}
@@ -29,7 +29,7 @@ Assuming that a table to hold stock prices is predefined, we need interfaces to 
 \texttt{StockPriceDataSource} (see figure~\ref{stockPriceDataSource}) is a Scala trait (which is similar to an interface in Java) that abstracts away the actual source of the stock prices.
 All objects that implement \texttt{StockPriceDataSource} must define two methods that allow you to request stock prices.
 The \texttt{query} method allows you to do a range query for stock prices of a particular symbol between two timestamps.
-The \texttt{priceAtTime} method provides a method that allows you to get the most recent stock price of a particular symbol (that is, on or before a given timestamp).
+The \texttt{priceAtTime} method allows you to get the most recent stock price of a particular symbol (that is, on or before a given timestamp).
 \texttt{StockPriceDataSource} affords this system the flexibility of moving away from HBase towards a different database solution.
 We define a \texttt{HBaseStockPriceDataSource} class which implements the contract laid out by \texttt{StockPriceDataSource}.
 The constructor for the \texttt{HBaseStockPriceDataSource} class takes the table name as a parameter.
@@ -47,19 +47,19 @@ These functions are used by the tools which query the external sources and popul
 
 \subsubsection{External Sources}
 
-We use two different external sources to retrieve daily stock prices for the full set of stocks that we are interested in.
-This set of securities consists of the 11 stocks in table~\ref{tab:stocks} and the S\&P 500 index.
+We use two different external sources to retrieve daily stock prices for the full set of stocks of interest.
+This set of securities consists of the 11 stocks in Table~\ref{tab:stocks} and the S\&P 500 index.
 The two data sources are Yahoo Finance and Google Finance.
 Since both of these sources give us access to daily summaries of the stock price, we will define an intermediate data structure that will store this daily summary and have functions to convert it into singular stock prices.
-This intermediate data structure can be seen in figure~\ref{endOfDayStockQuote}.
+This intermediate data structure can be seen in Figure~\ref{endOfDayStockQuote}.
 The daily stock price summary contains the open, close, high, and low prices and the transaction volume for a particular security on a given day.
 For every daily summary, we will use the open and close prices to generate the open and close stock prices for that day.
 In the context of our simulation, we have set the time of open price to be at 7:59 am and the time of the close price to be at 4:59 pm.
 Once we have \texttt{EndOfDayStockQuote} objects retrieved from the external data source, we can insert the open and close prices into an HBase table using an instance of the \texttt{HBaseStockPriceDataSource}.
 
-In order to retrieve these daily stock price summaries from the external sources, there must be some interface that queries the corresponding web APIs.
+In order to retrieve these daily stock price summaries from the external sources, there must be some interface that queries the corresponding Web APIs.
 For this, we define a trait named \texttt{EODStockQuoteAPI} that has a method called \texttt{getQuotes}.
-Implementing classes of \texttt{EODStockQuoteAPI} (that is, \texttt{YahooFinanceAPI} and \texttt{GoogleFinanceAPI}) will implement the \texttt{getQuotes} method to construct a query to the web API in the correct format and return a list of \texttt{EndOfDayStockQuotes}.
+Implementing classes of \texttt{EODStockQuoteAPI} (that is, \texttt{YahooFinanceAPI} and \texttt{GoogleFinanceAPI}) will implement the \texttt{getQuotes} method to construct a query to the Web API in the correct format and return a list of \texttt{EndOfDayStockQuotes}.
 Therefore, instances of the \texttt{YahooFinanceAPI} and \texttt{GoogleFinanceAPI} classes can retrieve the stock price information in the form of daily summaries, which we process into two stock prices at the open and close of each day, and use an instance of the \texttt{HBaseStockPriceDataSource} to populate our database.
 
 % Figure - endOfDayStockQuote
@@ -78,12 +78,12 @@ The opinion aggregation component contains sentiment analysis code, facilities t
 \subsubsection{Setting Up Database Schema}
 
 Similar to the pricing data component, we need to setup a table in HBase to store our microblog posts.
-Recall from figure~\ref{microblogPostSchema} that a microblog post table has the column families \texttt{base\_data} and \texttt{options}.
+Recall from Figure~\ref{microblogPostSchema} that a microblog post table has the column families \texttt{base\_data} and \texttt{options}.
 From the HBase shell, we execute the command ``\texttt{create 'stocktwits','base\_data','prices'}'' to create the table that will store all of our post data.
 
 \subsubsection{Database Interactions}
 
-In the same pattern as the pricing data component, we define a trait named \texttt{MicroblogDataSource} (see figure~\ref{microblogDataSource}).
+In the same pattern as the pricing data component, we define a trait named \texttt{MicroblogDataSource} (see Figure~\ref{microblogDataSource}).
 \texttt{MicroblogDataSource} contains a \texttt{query} method that allows you to perform a time range query on the set of posts.
 The \texttt{HBaseMicroblogDataSource} class, which implements the contract laid out by \texttt{MicroblogDataSource}, implements the \texttt{query} method so that it retrieves the posts from a table (specified in the class' constructor) in our HBase database.
 Additionally, the \texttt{HBaseMicroblogDataSource} contains a \texttt{write} function that will write a set of posts into the HBase table.
@@ -109,9 +109,9 @@ We sampled 50\% of the pre-classified posts to serve as the training data and th
 
 \subsubsection{Aggregation Model}
 
-A class named \texttt{AggregatedOpinions} will be implemented to perform the aggregate the sentiments towards each stock based on the method outlined in \textit{CrowdIQ} \cite{crowdiq}.
+A class named \texttt{AggregatedOpinions} will be implemented to aggregate the sentiments towards each stock based on the method outlined in \textit{CrowdIQ} \cite{crowdiq}.
 An instance of \texttt{AggregatedOpinions} is passed \texttt{MicroblogPost} objects (that include a sentiment that has been analyzed by our sentiment analysis model) one-by-one through a method named \texttt{on} (like an event listener).
-The quantity of author individual weight times the degree of independence needs to accumulated for each stock symbol and sentiment pair.
+The quantity of author individual weight times the degree of independence needs to be accumulated for each stock symbol and sentiment pair.
 Therefore, with each post, \texttt{AggregatedOpinions} will accumulate these values in a map that is keyed by a tuple of the stock symbol and sentiment.
 The degree of independence of a post is an exponential decay function that requires the order in which a post appears among others with the same sentiment and stock in a given time frame.
 This requires an additional map (also keyed by a tuple of stock symbol and sentiment) to store the order in which the next post appears.
@@ -135,7 +135,7 @@ It provides several functions that allow you to buy and sell shares of a stock.
 Additionally, it performs error checking so that you cannot perform invalid trades.
 Nick Anderson was responsible for implementing the first draft of the virtual portfolio.
 After the first draft of the virtual portfolio was completed, our team convened to discuss the final form of this API.
-This API consists of a class named \texttt{Portfolio} which stores the amount of cash available and map containing the stock symbols mapped to the amount of each stock that is currently held in the portfolio.
+This API consists of a class named \texttt{Portfolio} which stores the amount of cash available, and a map containing the stock symbols mapped to the amount of each stock that is currently held in the portfolio.
 This class is modeled as an immutable object.
 The \texttt{Portfolio} object requires a \texttt{StockPriceDataSource} instance to buy/sell stocks or calculate the total value of the portfolio.
 A \texttt{TransactionError} object is defined to represent an error performing a transaction.
@@ -193,11 +193,11 @@ Figures~\ref{tradingStrategy}, ~\ref{tradingEvent}, and ~\ref{microblogPostEvent
 
 \subsubsection{Trading Strategies}
 
-Referring back to our timeline from the design report, we are planning to implement the trading strategy described by \textit{CrowdIQ} before March 15th \cite{crowdiq}.
+Referring back to our timeline from the design report, we are planning to implement the trading strategy described by \textit{CrowdIQ} before March 15 \cite{crowdiq}.
 We can run simulations with this strategy and compare the results achieved by our implementation to see our simulation software in action and to make sure that our implementation of \textit{CrowdIQ} is working properly.
 More rigorous testing and analysis will be performed at later stages of the project.
 Additionally, we will implement a simple strategy that invests in the S\&P 500 index fund to compare our results against the market performance.
-The three trading strategies that we'd like to start implementing on April 1st will be implemented after we have ensured that we have a working system to test our strategies on.
+The three trading strategies that we'd like to start implementing on April 1 will be implemented after we have ensured that we have a working system on which to test our strategies.
 The intricate details of these strategies will be discussed in detail in the Refinement report.
 
 

@@ -3,7 +3,7 @@
 
 At this stage, we have implemented the trading simulation software that has been previously described in the requirements, design, and implementation reports.
 This section details the usage of this software.
-We will describe how to compile and run this software and how to interpret its output.
+We describe how to compile and run this software and how to interpret its output.
 
 \subsection{Program Entry Point}
 
@@ -18,13 +18,13 @@ On each market open event, we output a line to a CSV file with three columns.
 The first column is the time.
 The second column is the sum of all 11 Baseline strategy portfolio values.
 The third column is the S\&P 500 Buy-and-Hold strategy portfolio value.
-A CSV file is a universally recognized file format that is perfect for performing analysis on our data.
+A CSV file is a universally recognized file format that facilitates analysis on our data.
 
-This project does not provide any interface that is exceptionally user-friendly, but we can describe a few things about the code in the program entry point that will aid in customizing the parameters of the simulation.
+This project does not provide any interface that is especially usable, but we can describe a few things about the code in the program entry point that will aid in customizing the parameters of the simulation.
 
 \subsubsection{Specifying the Simulation Time Range}
 
-Since we are backtesting on old data, we need to specify a time range to run the simulation on.
+Since we are backtesting on old data, we need to specify a time range over which to run the simulation.
 This date is specified in the \texttt{TradingSimulation} program in the \texttt{start} and \texttt{end} values that are passed in the constructor of the \texttt{TradingContext}.
 These values are constructed using the \texttt{OffsetDateTime} class from Java 8's time library.
 Therefore, it is easy to read and modify the date and time of the timestamp being passed to the \texttt{TradingContext}.
@@ -55,11 +55,11 @@ Therefore, to run the \texttt{TradingSimulation} program, we execute \texttt{sbt
 \subsection{Interpreting the Output}
 
 As stated previously, our program outputs data points for the portfolio values of each strategy at the beginning of every market day.
-Because this information is output in a CSV file, we can easily import it in a spreadsheet software that is suited to perform analysis on the data.
+Because this information is output in a CSV file, we can easily import it in spreadsheet software that is suited to perform analysis on the data.
 An easy visualization of this data can be made by creating a line graph with the dates on the horizontal axis and the portfolio value on the vertical axis.
 Each strategy would be a separate series on this graph.
 This allows you to compare the performance of the strategies throughout the year.
-See figure~\ref{baselineAndIndexGraph} for an example of this that compares the S\&P 500 index fund with the Baseline strategy.
+See Figure~\ref{baselineAndIndexGraph} for an example of this that compares the S\&P 500 index fund with the Baseline strategy.
 
 % Figure - baselineAndIndexGraph
 \begin{figure}[h]

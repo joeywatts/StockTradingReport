@@ -12,7 +12,7 @@ If we are successful in “predicting” the stock market, there is potential fo
 Automated stock trading is a rapidly developing research area.
 Our paper will help to further expand this research.
 Its availability on VTechWorks will allow future researchers to expand upon our work.
-As evidenced by our group's use of earlier work done at Virginia Tech through CrowdIQ we can provide an exceptional roadmap to jump start others' forays into utilizing microblogging data as predictive input.  
+As evidenced by our group's use of earlier work done at Virginia Tech through CrowdIQ, we can provide a roadmap to jump start others' forays into utilizing microblogging data as predictive input.
 
 Formally there are no current plans for extended support.
 As opposed to other potential projects in this class ours is more conceptual/research based.
@@ -49,17 +49,17 @@ The virtual portfolio must take transaction fees into account with every transac
 
 We also must implement the opinion aggregation model from \textit{CrowdIQ}.
 This complex aggregation model takes a judge's historical accuracy and the interdependence of each post into account to accumulate an accurate opinion.
-This will be used to implement strategies that operate on the perceived market sentiment of a stock.
+This will be used to implement strategies that operate on the perceived market sentiment toward a stock.
 
 Our focus is to test and compare the performance of trading strategies for 11 stocks in the year of 2014.
-These 11 stocks are shown in table~\ref{tab:stocks}.
+These 11 stocks are shown in Table~\ref{tab:stocks}.
 This set of historical data is used to compare our results to a baseline.
 Focusing our testing to the same set of stocks allows for a more accurate comparisons of performance.
 Otherwise, the performance of the chosen stocks for a strategy would influence the potential returns.
 
 Our reach goal is to test our strategy on other time intervals in addition to the year of 2014.
 This will allow us to ensure that our trading method is not created just to specifically fit the data from 2014.
-This additional testing comes at a much lower cost than going straight to real time testing as it will be quicker and much of the implementation overlaps from the baseline set. 
+This additional testing comes at a much lower cost than going straight to real-time testing as it will be quicker, and much of the implementation overlaps from the baseline set. 
 
 A prospective future use case of this system is for real-time testing.
 Real-time access to stock prices and microblogging data often comes at quite a high cost.
@@ -73,14 +73,14 @@ Therefore, we are not expecting to perform any real-time testing.
   \caption{Example microblog post from StockTwits}\label{fig:stocktwits}
 \end{figure}
 
-As mentioned before, the main dataset consists of microblog posts from the StockTwits website.
+The main dataset consists of microblog posts from the StockTwits website.
 Each post will contain a stock symbol at the front as a way to determine what stock the user is talking about (see Figure~\ref{fig:stocktwits}).
 Some posts will also contain a tag referring to the tweet as either bullish or bearish.
 We will use sentiment analysis to detect the sentiment of untagged posts.
 
 The initial data set will focus on 11 stocks, shown in Table~\ref{tab:stocks}, for the year 2014.
 However, we hope to expand this time frame to include the year of 2015 as well.
-This will require us to obtain a set of microblog posts for year of 2015 from StockTwits.
+This will require us to obtain a set of microblog posts for 2015 from StockTwits.
 
 We will use stock price data to verify past predictions by judges.
 The verification of past predictions will be used to assign a weight to each judge.
@@ -97,7 +97,7 @@ The prices of the 11 stocks during the change and the microblog posts during the
 
 Saurabh and Eric have provided us with some code that will help implement the sentiment analysis.
 This code is in the Scala general-purpose programming language \cite{scala}.
-Due to this code already being created we have decided to do the rest of the program in Scala as well and will be storing it on a public GitHub repository.
+Due to this code already being created we have decided to do the rest of the program in Scala as well and will be storing in a public GitHub repository.
 
 We will also make use of previous implementations of chosen machine learning algorithms (specifically those provided in the Spark.ML library).
 This will allow us to save time by not creating anything that already exists.
