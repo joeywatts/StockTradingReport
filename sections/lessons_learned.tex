@@ -1,0 +1,46 @@
+\section{Lessons Learned}
+
+In this section, we reflect on our progress, documenting the problems that we encountered, and outline some possible directions of future work.
+
+\subsection{Problems Encountered}
+
+The main problem that we encountered was related to our project plan.
+We underestimated the amount of work that was required to produce a trading simulation software that was viable for running our tests.
+Due to the limited time we had to work on this project, we cannot build a comprehensive trading simulation with exceptional real-world accuracy from scratch.
+Our simulation software lacks realistic models which consider the trading volumes of each stock when placing orders.
+In our simulation, your orders are always fulfilled, but this is not always the case in real-life.
+The development of our simplified simulation and other parts of the project, including the CrowdIQ model, structures and schemas for stock prices and microblog posts, APIs to access stock price information, and more, put us behind schedule in the research and development of novel trading strategies.
+We would have liked to spend time on machine learning-based strategies and day trading strategies, but our time was too constrained for this to be possible.
+This project was a learning experience for our group because we had essentially no prior knowledge about the stock market.
+The effort behind this project has taught us some valuable lessons about developing and committing to a project timeline.
+
+\subsection{Future Work}
+
+There are many different directions in which future work could take this project.
+This section will detail a few of the directions that we have considered.
+
+\subsubsection{Improving Trading Simulation Software}
+
+As discussed in the \textit{Problems Encountered} section, our trading simulation software has an oversimplified ordering model that isn't always consistent with stock trading in the real world.
+One way to expand upon our work is to improve our simulation using a realistic ordering model that considers whether your stock orders would be fulfilled.
+Quantopian's slippage models are an example of an implementation of a realistic order fulfilling model \cite{quantopianSlippage}.
+This would require a modification of our pricing data schema to include the trading volume for each price tick.
+It would also be beneficial to modify the schema to include the bid/ask price instead of just one trade price.
+This would allow the simulation to consider the bid/ask spread.
+Additionally, our simulation software lacks a proper user-friendly interface.
+One way to develop a UI around this software is to turn it into a web server which you can access from your browser to start simulations with adjustable parameters (the trading strategies, trading event emitters, and time intervals) and easily export/view the results of past simulations.
+This would streamline the development and analysis of trading strategies using our system.
+Another addition to our trading simulation software would be the integration with platforms that execute real trades (like the Bloomberg Terminal\cite{terminal} and Robinhood\cite{robinhood}), allowing your strategies, as defined in this software, to drive real trades.
+
+\subsubsection{Advanced Trading Strategies}
+
+In the \textit{Problems Encountered} section, we mentioned that, due to time constraints, we were unable to explore some more advanced trading techniques.
+To expand upon our work, a future project could research machine learning-based strategies that learn relationships from various sources of information, such as stock price trends and the sentiment of microblog posts, to make decisions on whether to buy/sell a stock.
+Additionally, it would interesting to experiment with day trading.
+This would require a high-resolution source of stock quotes.
+It may be beneficial to address the potential inaccuracies of the simulation before adding day trading support, because the error introduced by not considering the bid-ask spread or not implementing a realistic order fulfillment model may compound as you start to trade at higher frequencies.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End:

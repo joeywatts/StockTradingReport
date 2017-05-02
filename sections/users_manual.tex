@@ -1,0 +1,54 @@
+\section{User's Manual}
+
+In this section, we describe the usage of our trading simulation software, including setting up databases, using the opinion aggregation implementation, and executing backtests for trading strategies.
+
+\subsection{Usage Environment}
+
+Our software does not come with a graphical user interface or even a single command line entrypoint.
+Our code is written with Scala \cite{scala} and uses sbt \cite{sbt} to manage project structure and dependencies.
+Additionally, our system depends upon an HBase \cite{hbase} instance or cluster.
+We have been provided a Hadoop cluster that runs HBase by Virginia Tech, so this manual will assume that you have an HBase instance setup and that you have sbt installed.
+Please consult an external reference if you need any assistance setting this up.
+If you are affiliated with Virginia Tech and are interested in the DLRL Hadoop cluster that we used, please contact Prof. Edward Fox for more information.
+
+\subsection{Use Cases}
+
+\subsubsection{Populating Databases}
+
+Before you can run any simulations, you must populate HBase with stock prices for the date range of interest.
+Additionally, if you want to use our sentiment-based strategies, you must populate HBase with microblog posts.
+To populate HBase with stock prices, you can use our \texttt{YahooGoogleFinance\-DBPopulate} utility, which will query Yahoo Finance and Google Finance for daily stock price summaries on a given date range and populate the database with the results.
+There are two variable declarations, \texttt{startDate} and \texttt{endDate}, which define the date range of daily stock prices to query.
+You should avoid setting a range that spans more than one year due to the limitations of the respective APIs.
+You can configure the symbols to query from Yahoo Finance and Google Finance by modifying the two lists named \texttt{yahooSymbols} and \texttt{googleSymbols}.
+The \texttt{dataSource} variable specifies that the \texttt{YahooFinance} table should be used.
+Therefore, you should create the HBase table named \texttt{stockprices\_yahoo} with the \texttt{price} column family (by executing \texttt{create `stockprices\_yahoo', `price'} in the HBase shell).
+For more information, see the Design report in Appendix~\ref{design}.
+To run the utility, use the command \texttt{sbt ``PricingData/run-main\\ cs4624.prices.test.YahooGoogleFinanceDBPopulate''}.
+
+\subsubsection{Stock Opinion Aggregation}
+
+We implemented the opinion aggregation model from a paper called \textit{CrowdIQ} \cite{crowdiq}.
+A library to use our implementation is provided with the Opinion Aggregation subproject.
+The \texttt{AggregatedOpinions} class provides an interface that will compute the aggregated sentiment towards a certain stock.
+This class requires that you have a source of stock price data.
+Additionally, you must specify a window of time which determines the amount of time after a post that we will confirm the accuracy of the post and adjust the weight for the post's author.
+To use an instance of this class, you pass the microblog posts in the interval (i.e., between market open events) to the \texttt{on} method.
+Using the \texttt{sentimentForStock} method, you can get the aggregated sentiment (bullish, bearish, or inconclusive) towards a stock symbol.
+After you've gotten the sentiments for that date, you use the \texttt{reset} method to start a new interval of posts and repeat the process.
+
+\subsubsection{Backtesting Trading Strategies}
+
+Our software provides the ability to test trading strategies by replaying historical data (a ``backtest'').
+Trading strategies are defined as extensions of the \texttt{Trading\-Strategy} trait.
+All data that a trading strategy can use to make decisions is formed into a class that extends the \texttt{Trading\-Event} trait.
+In a backtest, these events are collected for a particular time interval and passed in-order to each trading strategy by an instance of the \texttt{Trading\-Context} class.
+The \texttt{Trading\-Context} class takes the sources of these trading events, the set of trading strategies, and the time interval to test in its constructor.
+The \texttt{run} method, which will execute the backtest, takes a callback which allows you to see the change in each strategy's portfolio after an event.
+Our tests are written in the \texttt{Trading\-Simulation.scala} file.
+To execute this main class, run \texttt{sbt ``TradingSimulation/run-main\allowbreak cs4624.trading.TradingSimulation''}.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End:

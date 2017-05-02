@@ -27,6 +27,8 @@
 % max width key for includegraphics
 \usepackage[export]{adjustbox}
 
+\usepackage{appendix}
+
 \newcommand{\sectionbreak}{\clearpage}
 
 \begin{document}
@@ -40,9 +42,22 @@
 \addcontentsline{toc}{section}{List of Tables}
 \listoftables
 
+\subfile{sections/executive_summary}
+
+\subfile{sections/introduction}
+
+\subfile{sections/users_manual}
+
+\subfile{sections/developers_manual}
+
+\subfile{sections/lessons_learned}
+
 \subfile{sections/acknowledgements}
 
-\subfile{sections/executive_summary}
+\newpage
+\appendix
+\appendixpage
+\addappheadtotoc
 
 \subfile{sections/requirements}
 

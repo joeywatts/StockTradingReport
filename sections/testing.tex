@@ -1,5 +1,5 @@
 
-\section{Testing}
+\section{Testing}\label{testing}
 
 In this section, we will test the performance of our strategies by comparing their profit rate and portfolio values.
 We will also go over the testing that we perform on the trading simulation software to ensure that it operates as expected.
@@ -24,21 +24,22 @@ This has allowed us to detect issues that are harder to write tests for, such as
 Trading strategies are tested by running a simulation with historical data and observing their performance.
 This performance can be analyzed to determine which strategies are performing the best, and which ones perform the worst.
 
-We tested 7 different strategies, including the baseline strategy and the buy-and-hold S\&P 500 strategy.
+\subsubsection{Results for 2014}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[max width=\textwidth]{allStrategiesGraph}
+  \end{center}
+  \caption{A graph of the portfolio values for the year of 2014 for several trading strategies.}\label{fig:allStrategiesGraph}
+\end{figure}
+
+For 2014, we tested 7 different strategies, including the baseline strategy and the buy-and-hold S\&P 500 strategy.
 The ``Moving Average'' and ``Moving Average with Sentiment'' strategies detailed in the refinement report were also tested.
 Additionally, three variations of the ``Selection by Sentiment'' strategy were tested.
 The first is ``SelectionBySentiment(OneStock)'', which is the ``Selection by Sentiment'' strategy with $n=1$.
 ``SelectionBySentiment(AllStocks)'' is the ``Selection by Sentiment'' strategy with $n=11$.
 ``SelectionBySentiment'' is the ``Selection by Sentiment'' strategy with $n=3$.
-A graph of each strategy's portfolio values over time for the year of 2014 is shown in Figure~\ref{allStrategiesGraph}.
-
-\begin{figure}[h]
-  \label{allStrategiesGraph}
-  \begin{center}
-    \includegraphics[max width=\textwidth]{allStrategiesGraph}
-  \end{center}
-  \caption{A graph of the portfolio values for the year of 2014 for several trading strategies.}
-\end{figure}
+A graph of each strategy's portfolio values over time for the year of 2014 is shown in Figure~\ref{fig:allStrategiesGraph}.
 
 The Moving Average strategy only shows some marginal improvement over the S\&P 500 index.
 By considering the sentiment with the moving average, we see some additional improvement over that, but unfortunately, the Moving Average with Sentiment strategy yields lower returns than our baseline implementation.
@@ -62,6 +63,26 @@ After looking at the StockTwits posts from December 11, some seemed to be hopefu
 Here are some examples of these posts: ``\texttt{\$VRNG} Thus far charts looking nicely. We may take a nice rise.'', ``\texttt{\$VRNG} I’m here. Good morning VRNGites! Hope Mr Buies is ready to deal with corupt system and we go to \$10!!!!'', ``\texttt{\$VRNG} Chief Judge Prost has stood up for the little guy in the past...  \url{http://stks.co/e1MT6}'', and ``\texttt{\$VRNG} Trying to get licensing fees from ZTE is like stopping piracy. It’s not going to happen, and def not for a significant amt of money.''
 These posts give some insight into what’s happening, but there doesn’t seem to be a clear consensus.
 This indicates that experimentation with the cutoffs for bullish and bearish aggregated opinions could improve performance.
+
+\subsubsection{Results for 2015}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[max width=\textwidth]{allStrategies2015Graph}
+  \end{center}
+  \caption{A graph of the portfolio values for the year of 2015 for several trading strategies.}\label{fig:allStrategies2015Graph}
+\end{figure}
+
+For 2015, we tested the same 7 strategies as we did in 2014.
+A graph of each strategy's portfolio values over time for the year of 2015 is shown in Figure~\ref{fig:allStrategies2015Graph}.
+
+The results for all strategies are quite underwhelming in comparison to the 2014 results.
+The S\&P 500 index fund had the best performance judging by the portfolio values at the end of the year, but it still did significantly worse than it did in 2014.
+The index fund ended the year roughly at the same value with which it started, achieving essentially a zero percent return.
+This means that the overall market performed very poorly.
+All other strategies performed worse than the index fund, which shows that our strategies do not perform well in a bearish market.
+The only non-sentiment-based strategy other than the index fund is the moving average strategy, and this strategy performed consistently better throughout the year than all of the sentiment-based strategies.
+We can conclude that our sentiment-based strategies with the current sentiment analysis and opinion aggregation models perform very poorly in bearish markets.
 
 \subsection{Additional Refinements}
 

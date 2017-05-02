@@ -1,0 +1,44 @@
+\section{Developer's Manual}
+
+In this section, we describe our development environment, the structure of the project's code, and how to define new trading strategies and sources of data in our platform.
+
+\subsection{Preparing a Development Environment}
+
+To develop on our system, you will need to have sbt\cite{sbt} installed and an HBase\cite{hbase} instance ready to use. Virginia Tech's DLRL cluster is running the Cloudera 5.6.0 distribution which contains HBase version \texttt{1.0.0-cdh5.6.0}. To ensure that there are no incompatibilities, it is best to run this version of HBase. Because our project is using sbt, you should easily be able to import this code into your favorite Scala IDE, or you can simply edit the code in your favorite text editor and compile using the command line interface.
+
+\subsection{Project Structure}
+
+Our root sbt project is broken down into three subprojects: Pricing Data, Opinion Aggregation, and Trading Simulation.
+The Pricing Data subproject (located within the \path{PricingData/} folder) contains all of our code related to accumulating information about stock prices and populating it within our database.
+This includes APIs with query Yahoo and Google Finance, as well as data structures which represent a stock price tick and a daily stock price summary.
+The Opinion Aggregation subproject (located within the \path{OpinionAggregation/} folder) contains all of our code related to microblog posts, sentiment analysis, and the CrowdIQ model.
+This includes data structures to represent microblog posts, an API to read in StockTwits posts from the CSV format provided to us by our client, and an interface which facilitates the use of the CrowdIQ model in forming a crowd-sourced sentiment towards a stock.
+The Trading Simulation subproject (located within the \path{TradingSimulation/} folder) contains all of our code related to defining and testing trading strategies.
+This includes all of the strategies that we have developed and tested (Baseline, Moving Average, Selection by Sentiment, etc) and a program which executes a simulation with all of our strategies, outputting a CSV file with the results.
+Our project structure is outlined in extensive detail in the Design, Implementation, and Prototyping reports found in Appendixes~\ref{design},~\ref{implementation}, and~\ref{prototyping}, respectively.
+
+\subsection{Defining New Trading Strategies}
+
+One critical design feature of our simulation software was that it had to allow developers to easily define new trading strategies.
+This can be done by extending the \texttt{Trading\-Strategy} trait.
+This trait defines a \texttt{currentPortfolio} method which should return the current portfolio.
+Typically, your trading strategy will define a variable in the constructor to represent the portfolio, and you should override this method to return that portfolio.
+This is done so that other objects will not be able to mutate the portfolio instance within your trading strategy.
+The \texttt{Trading\-Strategy} trait also defines an \texttt{on} method which you should override to react to the delivery of a trading event.
+When your strategy receives an event, you can check the type of the event using pattern matching and perform different logic when a particular type of a event is sent.
+For example, if you wanted to buy/sell a stock when the market opens, you would use pattern matching to check for an event of the type \texttt{Market\-Open} to be sent, then perform this logic.
+
+\subsection{Defining Sources of Data}
+
+The ability for developers to easily extend our simulation software by adding new sources of information which strategies can consider in their decision-making was another crucial design choice.
+This was the main motivation for the \texttt{Trading\-Event} trait.
+By creating case classes which extend this trait, you can make it easy for strategies to use Scala's pattern matching feature to react to your event type.
+To add a source of data, simply create a case class which extends \texttt{Trading\-Event} and encapsulate your data within this case class.
+Then define a corresponding class, which will be used to query for these events during a backtest, that extends the \texttt{Trading\-Event\-Emitter} trait.
+This trait contains one method called \texttt{events\-For\-Interval}, which returns an iterator of the events (that is in-order by time) in a given time interval.
+An instance of the class extending \texttt{Trading\-Event\-Emitter} will need to be passed to your \texttt{Trading\-Context}'s constructor to generate the events during the backtest.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../report"
+%%% End:
