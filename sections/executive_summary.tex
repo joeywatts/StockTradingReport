@@ -3,34 +3,33 @@
 
 The goal of this project is to leverage microblogging data about the stock market to predict price trends and execute trades based on these predictions.
 Predicting the price trends of stocks with microblogging data involves a complex opinion aggregation model.
-For this, we are building upon previous research, specifically a paper called ``CrowdIQ'' submitted by a team consisting of some Virginia Tech faculty \cite{crowdiq}.
+For this, we built upon previous research, specifically a paper called ``CrowdIQ'' submitted by a team consisting of some Virginia Tech faculty \cite{crowdiq}.
 This paper details a complicated method of aggregating an accurate opinion by modeling judge reliability and interdependence.
-Once the overall sentiment of the judges is deduced, we can build trading strategies that take this information into account to execute trades.
+Once the overall sentiment of the judges was deduced, we built trading strategies that take this information into account to execute trades.
 
-The first step of the project is a sentiment analysis of posts on a microblogging site named StockTwits \cite{stocktwits}.
+The first step of the project was a sentiment analysis of posts on a microblogging site named StockTwits \cite{stocktwits}.
 These messages can contain a label indicating a bullish or bearish sentiment, which will help indicate a specific position to take on a given stock.
 However, most users choose not to use these labels on their StockTwits \cite{crowdiq}.
-A classification of these unlabeled tweets is the first step towards utilizing StockTwits at an automatic level to drive the proposed trading strategies.
+A classification of these unlabeled tweets is required to autonomously utilize StockTwits to drive the proposed trading strategies.
 
-With a working sentiment analysis model, we can implement the opinion aggregation model described by \textit{CrowdIQ} \cite{crowdiq}.
+With a working sentiment analysis model, we implemented the opinion aggregation model described by \textit{CrowdIQ} \cite{crowdiq}.
 This can gauge an accurate market sentiment for a particular stock based on the collection of sentiments that are received from users on StockTwits.
 
-The next step is creating a trading simulation platform, including a complete virtual portfolio management system and an API for retrieving historical and current stock data.
-These tools will allow us to run quick and repeatable tests of our trading strategies on historical data.
+The next step was the creation of a trading simulation platform, including a complete virtual portfolio management system and an API for retrieving historical and current stock data.
+These tools allow us to run quick and repeatable tests of our trading strategies on historical data.
 We can easily compare the performance of strategies by running them with the same historical data.
 
-After we have a viable testing environment setup, we can begin to implement trading strategies.
-This will require research into other attempts at similar uses of microblogging data on predicting stock returns.
-Doing so will give us ideas on trading strategies that might be predictable based on StockTwits sentiment, i.e., short selling.
-The testing environment will be focused on a set of stocks from 2014 that is consistent with the data used in \textit{CrowdIQ}.
+After we had a viable testing environment setup, we implemented trading strategies.
+This required research and analysis of other attempts at similar uses of microblogging data on predicting stock returns.
+The testing environment was focused on a set of stocks that is consistent with those used in \textit{CrowdIQ}.
 By implementing the strategy from \textit{CrowdIQ}, we will have a baseline against which we can compare our results.
 
-Development of new trading strategies is an open-ended task that will involve a process of trial and error.
+Development of new trading strategies is an open-ended task that involved a process of trial and error.
 It is possible for a strategy to find success in 2014, but not perform quite as well in other years, because market climates can be fickle.
-To assess the dependence of the market climate on our strategy's success, our goal is to also test against data for the year of 2015 and compare the performance.
+To assess the dependence of the market climate on our strategy's success, we also tested against data for the year of 2015 and compared the performance.
 
-The final deliverable will be a concrete trading strategy that acts based on the sentiment analysis derived from micro-blogging data from StockTwits.
-This model will be accompanied by a statistical analysis of our strategy's performance in comparison with other strategies.
+The final deliverable is a viable trading simulation environment coupled with various trading strategies and an analysis of their performance in the years of 2014 and 2015.
+The analysis of each strategy's performance indicates that our sentiment-based strategies perform better than the index in bullish markets like that of 2014, but, when they encounter a bear market, they typically make poor trading decisions which result in a loss of value.
 
 %%% Local Variables:
 %%% mode: latex

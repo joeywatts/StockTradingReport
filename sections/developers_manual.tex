@@ -10,7 +10,7 @@ To develop on our system, you will need to have sbt\cite{sbt} installed and an H
 
 Our root sbt project is broken down into three subprojects: Pricing Data, Opinion Aggregation, and Trading Simulation.
 The Pricing Data subproject (located within the \path{PricingData/} folder) contains all of our code related to accumulating information about stock prices and populating it within our database.
-This includes APIs with query Yahoo and Google Finance, as well as data structures which represent a stock price tick and a daily stock price summary.
+This includes APIs which query Yahoo and Google Finance, as well as data structures which represent a stock price tick and a daily stock price summary.
 The Opinion Aggregation subproject (located within the \path{OpinionAggregation/} folder) contains all of our code related to microblog posts, sentiment analysis, and the CrowdIQ model.
 This includes data structures to represent microblog posts, an API to read in StockTwits posts from the CSV format provided to us by our client, and an interface which facilitates the use of the CrowdIQ model in forming a crowd-sourced sentiment towards a stock.
 The Trading Simulation subproject (located within the \path{TradingSimulation/} folder) contains all of our code related to defining and testing trading strategies.

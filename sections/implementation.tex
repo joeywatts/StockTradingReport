@@ -141,11 +141,11 @@ The \texttt{Portfolio} object requires a \texttt{StockPriceDataSource} instance 
 A \texttt{TransactionError} object is defined to represent an error performing a transaction.
 This error object contains the previous portfolio and an error message describing what went wrong.
 The \texttt{Portfolio} object contains several methods to perform transactions, all of which return either a \texttt{TransactionError} or the resulting \texttt{Portfolio} object.
-The methods that perform transactions include \texttt{withSharesAtTargetAmount}, \texttt{withSharesAtTargetValue}, \texttt{withSharesPurchasedAtValue}, \texttt{withSharesPurchased}, \texttt{withSharesSold}, and \texttt{withAllSharesSold}.
-The \texttt{withSharesAtTargetAmount} and \texttt{withSharesAtTargetValue} methods perform a transaction so that the number of shares or the total value of the shares for a particular stock is a particular value.
-The \texttt{withSharesPurchasedAtValue} and \texttt{withSharesPurchased} methods will try to purchase more shares of a stock using the number of shares or the amount that you can buy with a dollar value, respectively.
-The \texttt{withSharesSold} method will try to sell a number of shares of a stock.
-The \texttt{withAllSharesSold} will sell all shares in the portfolio.
+The methods that perform transactions include \texttt{with\-Shares\-At\-Target\-Amount}, \texttt{with\-Shares\-At\-Target\-Value}, \texttt{with\-Shares\-Purchased\-At\-Value}, \texttt{with\-Shares\-Purchased}, \texttt{with\-Shares\-Sold}, and \texttt{with\-All\-Shares\-Sold}.
+The \texttt{with\-Shares\-At\-Target\-Amount} and \texttt{with\-Shares\-At\-Target\-Value} methods perform a transaction so that the number of shares or the total value of the shares for a particular stock is a particular value.
+The \texttt{with\-Shares\-Purchased\-At\-Value} and \texttt{with\-Shares\-Purchased} methods will try to purchase more shares of a stock using the number of shares or the amount that you can buy with a dollar value, respectively.
+The \texttt{with\-Shares\-Sold} method will try to sell a number of shares of a stock.
+The \texttt{with\-All\-Shares\-Sold} will sell all shares in the portfolio.
  
 \subsubsection{Trading Context}
 
